@@ -174,14 +174,50 @@
             letter-spacing: .7px;
         }
 
-        .field-full input[type=text] {
+        .idr-wrap {
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: rgba(255, 255, 255, .09);
+            border: 1.5px solid rgba(255, 255, 255, .12);
+            border-radius: 13px;
+            transition: border-color .2s, background .2s;
+            padding-right: 16px;
+        }
+
+        .idr-wrap:focus-within {
+            border-color: #b388ff;
+            background: rgba(179, 136, 255, .1);
+        }
+
+        .idr-wrap input[type=text] {
+            background: transparent;
+            border: none;
+            padding: 14px 4px 14px 44px;
             font-size: 1.3rem;
-            padding-left: 44px
+            margin-bottom: 0;
+            flex: 1;
+        }
+
+        .idr-wrap input[type=text]:focus {
+            background: transparent;
+            border: none;
         }
 
         .sym-rp {
             left: 13px;
-            font-size: .82rem
+            font-size: 1rem;
+            color: rgba(255, 255, 255, .4);
+            position: absolute;
+            font-weight: 700;
+        }
+
+        .idr-zeros {
+            color: rgba(255, 255, 255, .35);
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            pointer-events: none;
         }
 
         .divider {
@@ -301,10 +337,10 @@
         <!-- IDR full width -->
         <div class="field-full">
             <label>&#127470;&#127465; Индонезийская рупия</label>
-            <div class="wrap">
-                <span class="sym sym-rp">Rp</span>
-                <input type="text" id="idrIn" inputmode="decimal" placeholder="0" autocomplete="off"
-                    style="padding-left:44px;font-size:1.3rem" />
+            <div class="idr-wrap">
+                <span class="sym-rp">Rp</span>
+                <input type="text" id="idrIn" inputmode="decimal" placeholder="0" autocomplete="off" />
+                <span class="idr-zeros">000</span>
             </div>
         </div>
 
@@ -370,18 +406,22 @@
                 busy = true;
                 if (src === 'rub') {
                     usdEl.value = fmt(num / USD_RUB, 4);
-                    idrEl.value = fmt(num * RUB_IDR);
+                    var idrExact = num * RUB_IDR;
+                    var idrK = Math.round(idrExact / 1000);
+                    idrEl.value = fmt(idrK, 0);
                     resEl.innerHTML =
                         '<em>' + nice(num) + ' ₽</em> = ' +
                         '<em>$' + nice(num / USD_RUB) + '</em> = ' +
-                        '<em>' + nice(num * RUB_IDR) + ' Rp</em>';
+                        '<em>' + nice(idrK * 1000) + ' Rp</em>';
                 } else if (src === 'usd') {
                     rubEl.value = fmt(num * USD_RUB);
-                    idrEl.value = fmt(num * USD_IDR);
+                    var idrExact = num * USD_IDR;
+                    var idrK = Math.round(idrExact / 1000);
+                    idrEl.value = fmt(idrK, 0);
                     resEl.innerHTML =
                         '<em>$' + nice(num) + '</em> = ' +
                         '<em>' + nice(num * USD_RUB) + ' ₽</em> = ' +
-                        '<em>' + nice(num * USD_IDR) + ' Rp</em>';
+                        '<em>' + nice(idrK * 1000) + ' Rp</em>';
                 } else { // idr
                     rubEl.value = fmt(num / RUB_IDR);
                     usdEl.value = fmt(num / USD_IDR, 4);
@@ -414,18 +454,19 @@
                 var c = applyFmt(idrEl);
                 var n = parseFloat(c);
                 if (!c || isNaN(n)) { rubEl.value = ''; usdEl.value = ''; resEl.innerHTML = '&mdash;'; return; }
-                setOthers('idr', n);
+                setOthers('idr', n * 1000);
             });
 
             // Swap: exchange RUB/USD values with IDR
             document.getElementById('swapBtn').addEventListener('click', function () {
                 var idrRaw = clean(idrEl.value);
-                var numIdr = parseFloat(idrRaw);
-                if (!idrRaw || isNaN(numIdr)) return;
+                var numIdrK = parseFloat(idrRaw);
+                if (!idrRaw || isNaN(numIdrK)) return;
+                var numIdr = Math.round(numIdrK * 1000);
                 busy = true;
                 rubEl.value = fmt(numIdr / RUB_IDR);
                 usdEl.value = fmt(numIdr / USD_IDR, 4);
-                idrEl.value = fmt(numIdr);
+                idrEl.value = fmt(numIdrK, 0);
                 busy = false;
                 resEl.innerHTML =
                     '<em>' + nice(numIdr) + ' Rp</em> = ' +
@@ -437,10 +478,12 @@
             busy = true;
             rubEl.value = sep('1000');
             usdEl.value = fmt(1000 / USD_RUB, 4);
-            idrEl.value = fmt(1000 * RUB_IDR);
+            var idrInitExact = 1000 * RUB_IDR;
+            var idrInitK = Math.round(idrInitExact / 1000);
+            idrEl.value = fmt(idrInitK, 0);
             busy = false;
             resEl.innerHTML =
-                '<em>1 000 ₽</em> = <em>$' + nice(1000 / USD_RUB) + '</em> = <em>' + nice(1000 * RUB_IDR) + ' Rp</em>';
+                '<em>1 000 ₽</em> = <em>$' + nice(1000 / USD_RUB) + '</em> = <em>' + nice(idrInitK * 1000) + ' Rp</em>';
         })();
     </script>
 </body>
