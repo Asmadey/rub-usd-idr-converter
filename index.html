@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUB / USD ⇄ IDR Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom numeric font for better digits alignment */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        input {
+            outline: none;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-800">
+
+    <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+        <!-- Header -->
+        <div class="bg-indigo-600 px-6 py-8 text-center text-white">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">RUB / USD <span
+                    class="mx-2 text-indigo-300">⇄</span> IDR</h1>
+            <p class="text-indigo-100 text-sm font-medium flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
+                <span>1 ₽ = <span class="font-semibold text-white">215.79 Rp</span></span>
+                <span class="hidden sm:inline">|</span>
+                <span>1 $ = <span class="font-semibold text-white">16 886 Rp</span></span>
+                <span class="hidden sm:inline">|</span>
+                <span>1 $ = <span class="font-semibold text-white">78.25 ₽</span></span>
+            </p>
+        </div>
+
+        <!-- Converter Body -->
+        <div class="p-6 sm:p-8 space-y-6 relative">
+
+            <!-- Top Row: RUB and USD -->
+            <div id="sources-container" class="grid grid-cols-2 gap-4">
+
+                <!-- RUB Input -->
+                <div
+                    class="bg-slate-50 border border-slate-200 rounded-2xl p-4 transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Рубли
+                        (RUB)</label>
+                    <div class="flex items-center text-xl sm:text-2xl font-semibold">
+                        <span class="text-slate-400 mr-1 sm:mr-2 select-none">₽</span>
+                        <input type="text" inputmode="numeric" id="rub-input"
+                            class="w-full bg-transparent text-slate-800 font-bold placeholder-slate-300"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <!-- USD Input -->
+                <div
+                    class="bg-slate-50 border border-slate-200 rounded-2xl p-4 transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Доллары
+                        (USD)</label>
+                    <div class="flex items-center text-xl sm:text-2xl font-semibold">
+                        <span class="text-slate-400 mr-1 sm:mr-2 select-none">$</span>
+                        <input type="text" inputmode="numeric" id="usd-input"
+                            class="w-full bg-transparent text-slate-800 font-bold placeholder-slate-300"
+                            placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swap Button -->
+            <div class="flex justify-center -my-3 relative z-10">
+                <button id="swap-btn"
+                    class="bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200 shadow-sm rounded-full p-2.5 transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    aria-label="Swap currencies">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Bottom Row: IDR -->
+            <div id="target-container">
+                <div
+                    class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 sm:p-5 transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                    <label class="block text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Индонезийские
+                        рупии (IDR)</label>
+                    <div class="flex items-center text-2xl sm:text-4xl font-semibold">
+                        <span class="text-indigo-400 mr-2 sm:mr-3 select-none">Rp</span>
+                        <input type="text" inputmode="numeric" id="idr-input"
+                            class="w-full bg-transparent text-indigo-900 font-bold placeholder-indigo-200"
+                            placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Text -->
+            <div class="pt-2 text-center">
+                <p class="text-sm font-medium text-slate-500 bg-slate-100 inline-block px-4 py-2 rounded-full shadow-inner"
+                    id="summary-text">
+                    ИТОГ: 1 000 ₽ = $12.78 = 215 789 Rp
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Constants & Rates
+        const RATE_USD_IDR = 16886;
+        const RATE_USD_RUB = 78.25;
+        const RATE_RUB_IDR = 215.79;
+
+        // Elements
+        const rubInput = document.getElementById('rub-input');
+        const usdInput = document.getElementById('usd-input');
+        const idrInput = document.getElementById('idr-input');
+        const swapBtn = document.getElementById('swap-btn');
+        const summaryText = document.getElementById('summary-text');
+
+        // Layout containers
+        const topContainer = document.getElementById('sources-container');
+        const bottomContainer = document.getElementById('target-container');
+
+        // State
+        // isIdrSource: false -> RUB & USD top, IDR bottom.
+        // isIdrSource: true  -> IDR top, RUB & USD bottom.
+        let isIdrSource = false;
+
+        // Formatter (converts number to localized string with spaces)
+        const formatNumber = (num, decimals = 0) => {
+            // Create formatter
+            const formatter = new Intl.NumberFormat('ru-RU', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+            });
+            // Replace non-breaking spaces with standard spaces for consistency
+            return formatter.format(num).replace(/\u00A0/g, ' ');
+        };
+
+        // Parser (converts spaced string to float)
+        const parseNumber = (str) => {
+            if (!str) return 0;
+            // Remove spaces and commas, replace comma with dot if user typed it
+            const cleanStr = str.replace(/\s+/g, '').replace(/,/g, '.');
+            const num = parseFloat(cleanStr);
+            return isNaN(num) ? 0 : num;
+        };
+
+        // Update summary text
+        const updateSummary = (rub, usd, idr) => {
+            let rStr = formatNumber(rub, 0) + ' ₽';
+            let uStr = '$' + formatNumber(usd, 2);
+            let iStr = formatNumber(idr, 0) + ' Rp';
+
+            if (isIdrSource) {
+                summaryText.innerHTML = \`ИТОГ: \${iStr} = \${uStr} = \${rStr}\`;
+      } else {
+        summaryText.innerHTML = \`ИТОГ: \${rStr} = \${uStr} = \${iStr}\`;
+      }
+    };
+
+    // Handler for RUB changes
+    const onRubChange = (e) => {
+      let val = parseNumber(e.target.value);
+      
+      // Calculate others
+      let usd = val / RATE_USD_RUB;
+      let idr = val * RATE_RUB_IDR;
+
+      // Update inputs (if not currently focused)
+      usdInput.value = formatNumber(usd, 2);
+      idrInput.value = formatNumber(idr, 0);
+
+      updateSummary(val, usd, idr);
+    };
+
+    // Handler for USD changes
+    const onUsdChange = (e) => {
+      let val = parseNumber(e.target.value);
+      
+      // Calculate others
+      let rub = val * RATE_USD_RUB;
+      let idr = val * RATE_USD_IDR;
+
+      rubInput.value = formatNumber(rub, 0);
+      idrInput.value = formatNumber(idr, 0);
+
+      updateSummary(rub, val, idr);
+    };
+
+    // Handler for IDR changes
+    const onIdrChange = (e) => {
+      let val = parseNumber(e.target.value);
+
+      // Calculate others
+      let rub = val / RATE_RUB_IDR;
+      let usd = val / RATE_USD_IDR;
+
+      rubInput.value = formatNumber(rub, 0);
+      usdInput.value = formatNumber(usd, 2);
+
+      updateSummary(rub, usd, val);
+    };
+
+    // Format fields on blur to ensure nice spaces
+    const formatOnBlur = (inputEl, decimals) => {
+      let val = parseNumber(inputEl.value);
+      if (val === 0 && inputEl.value === "") return;
+      inputEl.value = formatNumber(val, decimals);
+    };
+
+    // Sanitize input while typing (allow digits, spaces, dots, commas)
+    const sanitizeInput = (e) => {
+      const start = e.target.selectionStart;
+      const oldVal = e.target.value;
+      
+      // remove anything that is not digit, dot, comma, or space
+      const newVal = oldVal.replace(/[^0-9.,\\s]/g, '');
+      if (oldVal !== newVal) {
+        e.target.value = newVal;
+        e.target.setSelectionRange(start - 1, start - 1);
+      }
+    };
+
+    // Swap Logic
+    swapBtn.addEventListener('click', () => {
+      isIdrSource = !isIdrSource;
+      
+      const rubUsdNode = isIdrSource ? bottomContainer : topContainer;
+      const idrNode = isIdrSource ? topContainer : bottomContainer;
+      
+      // Swap the elements inside the containers
+      const sourcesHtml = topContainer.innerHTML;
+      const targetHtml = bottomContainer.innerHTML;
+
+      // Because we are moving DOM nodes to keep events, we should append rather than innerHTML
+      const sourcesDivs = Array.from(topContainer.children);
+      const targetDivs = Array.from(bottomContainer.children);
+
+      topContainer.innerHTML = '';
+      bottomContainer.innerHTML = '';
+
+      if (isIdrSource) {
+        targetDivs.forEach(node => topContainer.appendChild(node));
+        
+        // Adjust grid for new layout
+        topContainer.className = "";
+        
+        sourcesDivs.forEach(node => bottomContainer.appendChild(node));
+        bottomContainer.className = "grid grid-cols-2 gap-4";
+        
+        // Style changes for swap
+        idrInput.parentElement.parentElement.classList.replace('bg-indigo-50', 'bg-slate-50');
+        idrInput.parentElement.parentElement.classList.replace('border-indigo-100', 'border-slate-200');
+        idrInput.parentElement.previousElementSibling.classList.replace('text-indigo-500', 'text-slate-500');
+        
+        rubInput.parentElement.parentElement.classList.replace('bg-slate-50', 'bg-indigo-50');
+        rubInput.parentElement.parentElement.classList.replace('border-slate-200', 'border-indigo-100');
+        rubInput.parentElement.previousElementSibling.classList.replace('text-slate-500', 'text-indigo-500');
+
+        usdInput.parentElement.parentElement.classList.replace('bg-slate-50', 'bg-indigo-50');
+        usdInput.parentElement.parentElement.classList.replace('border-slate-200', 'border-indigo-100');
+        usdInput.parentElement.previousElementSibling.classList.replace('text-slate-500', 'text-indigo-500');
+
+      } else {
+        sourcesDivs.forEach(node => topContainer.appendChild(node));
+        topContainer.className = "grid grid-cols-2 gap-4";
+        
+        targetDivs.forEach(node => bottomContainer.appendChild(node));
+        bottomContainer.className = "";
+
+        // Revert Style changes
+        idrInput.parentElement.parentElement.classList.replace('bg-slate-50', 'bg-indigo-50');
+        idrInput.parentElement.parentElement.classList.replace('border-slate-200', 'border-indigo-100');
+        idrInput.parentElement.previousElementSibling.classList.replace('text-slate-500', 'text-indigo-500');
+
+        rubInput.parentElement.parentElement.classList.replace('bg-indigo-50', 'bg-slate-50');
+        rubInput.parentElement.parentElement.classList.replace('border-indigo-100', 'border-slate-200');
+        rubInput.parentElement.previousElementSibling.classList.replace('text-indigo-500', 'text-slate-500');
+
+        usdInput.parentElement.parentElement.classList.replace('bg-indigo-50', 'bg-slate-50');
+        usdInput.parentElement.parentElement.classList.replace('border-indigo-100', 'border-slate-200');
+        usdInput.parentElement.previousElementSibling.classList.replace('text-indigo-500', 'text-slate-500');
+      }
+
+      // Add rotation animation
+      swapBtn.children[0].style.transform = isIdrSource ? 'rotate(180deg)' : 'rotate(0deg)';
+      swapBtn.children[0].style.transition = 'transform 0.3s ease';
+
+      // Update summary direction
+      let rub = parseNumber(rubInput.value);
+      let usd = parseNumber(usdInput.value);
+      let idr = parseNumber(idrInput.value);
+      updateSummary(rub, usd, idr);
+    });
+
+    // Event Listeners
+    rubInput.addEventListener('input', (e) => { sanitizeInput(e); onRubChange(e); });
+    usdInput.addEventListener('input', (e) => { sanitizeInput(e); onUsdChange(e); });
+    idrInput.addEventListener('input', (e) => { sanitizeInput(e); onIdrChange(e); });
+
+    rubInput.addEventListener('blur', () => formatOnBlur(rubInput, 0));
+    usdInput.addEventListener('blur', () => formatOnBlur(usdInput, 2));
+    idrInput.addEventListener('blur', () => formatOnBlur(idrInput, 0));
+
+    // Initialize with 1000 RUB
+    rubInput.value = "1 000";
+    rubInput.dispatchEvent(new Event('input'));
+    </script>
+</body>
+
+</html>
