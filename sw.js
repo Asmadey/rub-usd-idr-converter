@@ -1,4 +1,4 @@
-const CACHE_NAME = 'currency-converter-v1';
+const CACHE_NAME = 'currency-converter-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -26,6 +26,6 @@ self.addEventListener('fetch', event => {
         }
         return fetch(event.request);
       }
-    )
+      )
   );
 });

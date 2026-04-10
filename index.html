@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>RUB / USD ⇄ IDR</title>
+    <title>RUB / USD ⇄ VND</title>
 
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.json">
@@ -168,7 +168,7 @@
             background: rgba(179, 136, 255, .1)
         }
 
-        /* Full-width IDR field */
+        /* Full-width VND field */
         .field-full {
             margin-bottom: 16px
         }
@@ -185,7 +185,7 @@
             letter-spacing: .7px;
         }
 
-        .idr-wrap {
+        .vnd-wrap {
             display: flex;
             align-items: center;
             position: relative;
@@ -196,12 +196,12 @@
             padding-right: 16px;
         }
 
-        .idr-wrap:focus-within {
+        .vnd-wrap:focus-within {
             border-color: #b388ff;
             background: rgba(179, 136, 255, .1);
         }
 
-        .idr-wrap input[type=text] {
+        .vnd-wrap input[type=text] {
             background: transparent;
             border: none;
             padding: 14px 4px 14px 44px;
@@ -210,20 +210,20 @@
             flex: 1;
         }
 
-        .idr-wrap input[type=text]:focus {
+        .vnd-wrap input[type=text]:focus {
             background: transparent;
             border: none;
         }
 
-        .sym-rp {
+        .sym-vnd {
             left: 13px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: rgba(255, 255, 255, .4);
             position: absolute;
             font-weight: 700;
         }
 
-        .idr-zeros {
+        .vnd-zeros {
             color: rgba(255, 255, 255, .35);
             font-size: 1.3rem;
             font-weight: 600;
@@ -306,18 +306,18 @@
 
 <body>
     <div class="card">
-        <h1>&#x1F4B1; RUB / USD &#8644; IDR</h1>
-        <p class="subtitle">Конвертер валют &middot; 10 марта 2026</p>
+        <h1>&#x1F4B1; RUB / USD &#8644; VND</h1>
+        <p class="subtitle">Конвертер валют &middot; 10 апреля 2026</p>
 
         <div class="badges">
             <div class="badge">
-                <div class="dot"></div><span>1 &#8381;</span><strong>=&thinsp;215.79 Rp</strong>
+                <div class="dot"></div><span>1 &#8381;</span><strong>=&thinsp;324.8 ₫</strong>
             </div>
             <div class="badge">
-                <div class="dot"></div><span>1 $</span><strong>=&thinsp;16 450 Rp</strong>
+                <div class="dot"></div><span>1 $</span><strong>=&thinsp;26 000 ₫</strong>
             </div>
             <div class="badge">
-                <div class="dot"></div><span>1 $</span><strong>=&thinsp;78.25 &#8381;</strong>
+                <div class="dot"></div><span>1 $</span><strong>=&thinsp;80.05 &#8381;</strong>
             </div>
         </div>
 
@@ -345,13 +345,13 @@
             <hr />
         </div>
 
-        <!-- IDR full width -->
+        <!-- VND full width -->
         <div class="field-full">
-            <label>&#127470;&#127465; Индонезийская рупия</label>
-            <div class="idr-wrap">
-                <span class="sym-rp">Rp</span>
-                <input type="text" id="idrIn" inputmode="decimal" placeholder="0" autocomplete="off" />
-                <span class="idr-zeros">000</span>
+            <label>&#127483;&#127475; Вьетнамский донг</label>
+            <div class="vnd-wrap">
+                <span class="sym-vnd">₫</span>
+                <input type="text" id="vndIn" inputmode="decimal" placeholder="0" autocomplete="off" />
+                <span class="vnd-zeros">000</span>
             </div>
         </div>
 
@@ -360,18 +360,18 @@
             <div class="result-value" id="resText">&mdash;</div>
         </div>
 
-        <p class="footer">Источник: XE.com &middot; 10.03.2026</p>
+        <p class="footer">Источник: Расчёт USDT &middot; 10.04.2026</p>
     </div>
 
     <script>
         (function () {
-            var USD_RUB = 78.252;   // 1 USD = 78.252 RUB
-            var USD_IDR = 16450;  // 1 USD = 16450 IDR
-            var RUB_IDR = USD_IDR / USD_RUB; // 1 RUB = 210.218 IDR
+            var USD_RUB = 80.05;   // 1 USD = 80.05 RUB
+            var USD_VND = 26000;  // 1 USD = 26000 VND
+            var RUB_VND = 324.8; // 1 RUB = 324.8 VND
 
             var rubEl = document.getElementById('rubIn');
             var usdEl = document.getElementById('usdIn');
-            var idrEl = document.getElementById('idrIn');
+            var vndEl = document.getElementById('vndIn');
             var resEl = document.getElementById('resText');
             var busy = false;
 
@@ -416,30 +416,30 @@
             function setOthers(src, num) {
                 busy = true;
                 if (src === 'rub') {
-                    usdEl.value = fmt(num / USD_RUB, 4);
-                    var idrExact = num * RUB_IDR;
-                    var idrK = Math.round(idrExact / 1000);
-                    idrEl.value = fmt(idrK, 0);
+                    usdEl.value = fmt(num / USD_RUB, 2);
+                    var vndExact = num * RUB_VND;
+                    var vndK = Math.round(vndExact / 1000 * 10) / 10; // keep one decimal for thousands
+                    vndEl.value = fmt(vndK, 1);
                     resEl.innerHTML =
                         '<em>' + nice(num) + ' ₽</em> = ' +
                         '<em>$' + nice(num / USD_RUB) + '</em> = ' +
-                        '<em>' + nice(idrK * 1000) + ' Rp</em>';
+                        '<em>' + nice(vndExact) + ' ₫</em>';
                 } else if (src === 'usd') {
-                    rubEl.value = fmt(num * USD_RUB);
-                    var idrExact = num * USD_IDR;
-                    var idrK = Math.round(idrExact / 1000);
-                    idrEl.value = fmt(idrK, 0);
+                    rubEl.value = fmt(num * USD_RUB, 2);
+                    var vndExact = num * USD_VND;
+                    var vndK = Math.round(vndExact / 1000);
+                    vndEl.value = fmt(vndK, 0);
                     resEl.innerHTML =
                         '<em>$' + nice(num) + '</em> = ' +
                         '<em>' + nice(num * USD_RUB) + ' ₽</em> = ' +
-                        '<em>' + nice(idrK * 1000) + ' Rp</em>';
-                } else { // idr
-                    rubEl.value = fmt(num / RUB_IDR);
-                    usdEl.value = fmt(num / USD_IDR, 4);
+                        '<em>' + nice(vndExact) + ' ₫</em>';
+                } else { // vnd
+                    rubEl.value = fmt(num / RUB_VND, 2);
+                    usdEl.value = fmt(num / USD_VND, 2);
                     resEl.innerHTML =
-                        '<em>' + nice(num) + ' Rp</em> = ' +
-                        '<em>' + nice(num / RUB_IDR) + ' ₽</em> = ' +
-                        '<em>$' + nice(num / USD_IDR) + '</em>';
+                        '<em>' + nice(num) + ' ₫</em> = ' +
+                        '<em>' + nice(num / RUB_VND) + ' ₽</em> = ' +
+                        '<em>$' + nice(num / USD_VND) + '</em>';
                 }
                 busy = false;
             }
@@ -448,7 +448,7 @@
                 if (busy) return;
                 var c = applyFmt(rubEl);
                 var n = parseFloat(c);
-                if (!c || isNaN(n)) { usdEl.value = ''; idrEl.value = ''; resEl.innerHTML = '&mdash;'; return; }
+                if (!c || isNaN(n)) { usdEl.value = ''; vndEl.value = ''; resEl.innerHTML = '&mdash;'; return; }
                 setOthers('rub', n);
             });
 
@@ -456,45 +456,45 @@
                 if (busy) return;
                 var c = applyFmt(usdEl);
                 var n = parseFloat(c);
-                if (!c || isNaN(n)) { rubEl.value = ''; idrEl.value = ''; resEl.innerHTML = '&mdash;'; return; }
+                if (!c || isNaN(n)) { rubEl.value = ''; vndEl.value = ''; resEl.innerHTML = '&mdash;'; return; }
                 setOthers('usd', n);
             });
 
-            idrEl.addEventListener('input', function () {
+            vndEl.addEventListener('input', function () {
                 if (busy) return;
-                var c = applyFmt(idrEl);
+                var c = applyFmt(vndEl);
                 var n = parseFloat(c);
                 if (!c || isNaN(n)) { rubEl.value = ''; usdEl.value = ''; resEl.innerHTML = '&mdash;'; return; }
-                setOthers('idr', n * 1000);
+                setOthers('vnd', n * 1000);
             });
 
-            // Swap: exchange RUB/USD values with IDR
+            // Swap: exchange RUB/USD values with VND
             document.getElementById('swapBtn').addEventListener('click', function () {
-                var idrRaw = clean(idrEl.value);
-                var numIdrK = parseFloat(idrRaw);
-                if (!idrRaw || isNaN(numIdrK)) return;
-                var numIdr = Math.round(numIdrK * 1000);
+                var vndRaw = clean(vndEl.value);
+                var numVndK = parseFloat(vndRaw);
+                if (!vndRaw || isNaN(numVndK)) return;
+                var numVnd = Math.round(numVndK * 1000);
                 busy = true;
-                rubEl.value = fmt(numIdr / RUB_IDR);
-                usdEl.value = fmt(numIdr / USD_IDR, 4);
-                idrEl.value = fmt(numIdrK, 0);
+                rubEl.value = fmt(numVnd / RUB_VND, 2);
+                usdEl.value = fmt(numVnd / USD_VND, 2);
+                vndEl.value = fmt(numVndK, 1);
                 busy = false;
                 resEl.innerHTML =
-                    '<em>' + nice(numIdr) + ' Rp</em> = ' +
-                    '<em>' + nice(numIdr / RUB_IDR) + ' ₽</em> = ' +
-                    '<em>$' + nice(numIdr / USD_IDR) + '</em>';
+                    '<em>' + nice(numVnd) + ' ₫</em> = ' +
+                    '<em>' + nice(numVnd / RUB_VND) + ' ₽</em> = ' +
+                    '<em>$' + nice(numVnd / USD_VND) + '</em>';
             });
 
             // Init: 1000 RUB default
             busy = true;
             rubEl.value = sep('1000');
-            usdEl.value = fmt(1000 / USD_RUB, 4);
-            var idrInitExact = 1000 * RUB_IDR;
-            var idrInitK = Math.round(idrInitExact / 1000);
-            idrEl.value = fmt(idrInitK, 0);
+            usdEl.value = fmt(1000 / USD_RUB, 2);
+            var vndInitExact = 1000 * RUB_VND;
+            var vndInitK = vndInitExact / 1000;
+            vndEl.value = fmt(vndInitK, 1);
             busy = false;
             resEl.innerHTML =
-                '<em>1 000 ₽</em> = <em>$' + nice(1000 / USD_RUB) + '</em> = <em>' + nice(idrInitK * 1000) + ' Rp</em>';
+                '<em>1 000 ₽</em> = <em>$' + nice(1000 / USD_RUB) + '</em> = <em>' + nice(vndInitExact) + ' ₫</em>';
         })();
 
         // Register Service Worker
